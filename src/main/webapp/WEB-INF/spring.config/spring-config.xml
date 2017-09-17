@@ -72,32 +72,8 @@
           class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
 
     <tx:annotation-driven proxy-target-class="true" transaction-manager="transactionManager" />
-    <!--<bean id="sessionFactory"
-          class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
-        <property name="dataSource" ref="dataSource" />
-        <property name="annotatedClasses">
-            <list>
-                <value>com.beingjavaguys.model.Employee</value>
-            </list>
-        </property>
-        <property name="hibernateProperties">
-            <props>
-                <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
-                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
-            </props>
-        </property>
-    </bean>
 
-    <bean id="txManager"
-          class="org.springframework.orm.hibernate4.HibernateTransactionManager">
-        <property name="sessionFactory" ref="sessionFactory" />
-    </bean>
-
-    <bean id="persistenceExceptionTranslationPostProcessor"
-          class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
-
-    <bean id="dataDao" class="com.beingjavaguys.dao.DataDaoImpl"></bean>
-    <bean id="dataServices" class="com.beingjavaguys.services.DataServicesImpl"></bean>-->
+    <!--http://blog.netgloo.com/2014/10/06/spring-boot-data-access-with-jpa-hibernate-and-mysql/-->
 
 
 </beans>
