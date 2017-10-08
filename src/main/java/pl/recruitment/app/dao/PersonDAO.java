@@ -2,15 +2,13 @@ package pl.recruitment.app.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
-import pl.recruitment.app.controller.PersonController;
 import pl.recruitment.app.model.Person;
+import pl.recruitment.app.service.MessageSenderService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,9 +20,14 @@ import java.util.List;
 @Component
 public class PersonDAO implements PersonDataManipulation {
 
+    private static final String PERSON_CREATION_QUEUE_DEFAULT_MSG = "Person created: ";
     private static final Logger _log = LoggerFactory.getLogger(PersonDAO.class);
+
     @PersistenceContext
     private EntityManager em;
+
+    @Autowired
+    private MessageSenderService messageSenderService;
 
     public List<Person> getAllPersons() {
         return em.createQuery("SELECT p FROM Person p").getResultList();
@@ -35,7 +38,9 @@ public class PersonDAO implements PersonDataManipulation {
     }
 
     public void addPerson(Person newPerson) {
+
         em.persist(newPerson);
+        messageSenderService.sendMessage(PERSON_CREATION_QUEUE_DEFAULT_MSG + newPerson);
     }
 
     public void editPerson(Person modifiedPerson, int personId) {

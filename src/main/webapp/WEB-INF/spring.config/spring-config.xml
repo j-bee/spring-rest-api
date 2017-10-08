@@ -2,12 +2,13 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jms="http://www.springframework.org/schema/jms"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:mvc="http://www.springframework.org/schema/mvc"
        xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
   http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd http://www.springframework.org/schema/tx
-  http://www.springframework.org/schema/tx/spring-tx-3.2.xsd">
+  http://www.springframework.org/schema/tx/spring-tx-3.2.xsd http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-3.0.xsd">
 
     <context:component-scan base-package="pl.recruitment.app"/>
     <mvc:annotation-driven/>
@@ -30,7 +31,6 @@
     <bean id="jsonMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
     </bean>
 
-
     <!-- project beans -->
     <bean id="personDao" class="pl.recruitment.app.dao.PersonDAO">
     </bean>
@@ -38,7 +38,6 @@
     <bean id="dataServices" class="pl.recruitment.app.service.PersonService">
         <property name="personDAO" ref="personDao"/>
     </bean>
-
 
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
@@ -73,7 +72,33 @@
 
     <tx:annotation-driven proxy-target-class="true" transaction-manager="transactionManager" />
 
+    <bean id="queueConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="tcp://localhost:61616" />
+    </bean>
+
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="queueConnectionFactory" />
+        <!--<property name="defaultDestinationName" value="topicDestination"/>-->
+        <property name="defaultDestinationName" value="personCreationQueue"/>
+    </bean>
+
+    <bean id="messageSenderService" class="pl.recruitment.app.service.MessageSenderService">
+        <property name="jmsTemplate" ref="jmsTemplate" />
+    </bean>
     <!--http://blog.netgloo.com/2014/10/06/spring-boot-data-access-with-jpa-hibernate-and-mysql/-->
 
+    <jms:listener-container container-type="default"
+                            connection-factory="queueConnectionFactory" acknowledge="auto">
+        <jms:listener destination="personCreationQueue" ref="messageListener"
+                      method="onMessage" />
+    </jms:listener-container>
+
+    <bean id="messageListener" class="pl.recruitment.app.service.MessageListenerService" />
+
+    <!-- use topic instead of queue -->
+    <!--<bean id="topicDestination"
+          class="org.apache.activemq.command.ActiveMQTopic">
+        &lt;!&ndash;<constructor-arg value="mail.topic" />&ndash;&gt;
+    </bean>-->
 
 </beans>
